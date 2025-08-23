@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package gophkeeper.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "./gophkeeper";
+
+message RegisterRequest {
+  string email = 1 [(buf.validate.field).string = {
+    email: true
+    min_len: 5
+    max_len: 255
+  }];
+  string password = 2 [(buf.validate.field).string = {
+    min_len: 8
+    max_len: 64
+  }];
+}
+
+message RegisterResponse {
+  string token = 1;
+}
+
+message LoginRequest {
+  string email = 1 [(buf.validate.field).string = {
+    email: true
+    min_len: 5
+    max_len: 255
+  }];
+  string password = 2 [(buf.validate.field).string = {
+    min_len: 8
+    max_len: 64
+  }];
+}
+
+message LoginResponse {
+  string token = 1;
+}
+
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+}
