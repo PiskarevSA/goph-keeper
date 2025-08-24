@@ -954,59 +954,6 @@ func (*DeleteResponse) Descriptor() ([]byte, []int) {
 	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{15}
 }
 
-// both year and month should be 0 if not present
-type Card_ExpirationDate struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Year          int32                  `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
-	Month         int32                  `protobuf:"varint,2,opt,name=month,proto3" json:"month,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Card_ExpirationDate) Reset() {
-	*x = Card_ExpirationDate{}
-	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Card_ExpirationDate) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Card_ExpirationDate) ProtoMessage() {}
-
-func (x *Card_ExpirationDate) ProtoReflect() protoreflect.Message {
-	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Card_ExpirationDate.ProtoReflect.Descriptor instead.
-func (*Card_ExpirationDate) Descriptor() ([]byte, []int) {
-	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{2, 0}
-}
-
-func (x *Card_ExpirationDate) GetYear() int32 {
-	if x != nil {
-		return x.Year
-	}
-	return 0
-}
-
-func (x *Card_ExpirationDate) GetMonth() int32 {
-	if x != nil {
-		return x.Month
-	}
-	return 0
-}
-
 var File_gophkeeper_v1_secrets_proto protoreflect.FileDescriptor
 
 const file_gophkeeper_v1_secrets_proto_rawDesc = "" +
@@ -1027,15 +974,12 @@ const file_gophkeeper_v1_secrets_proto_rawDesc = "" +
 	"\bKIND_RAW\x10\x04\"?\n" +
 	"\vCredentials\x12\x14\n" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xd9\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x9d\x01\n" +
 	"\x04Card\x12\x16\n" +
 	"\x06number\x18\x01 \x01(\tR\x06number\x12\x16\n" +
 	"\x06holder\x18\x02 \x01(\tR\x06holder\x128\n" +
 	"\aexpires\x18\x03 \x01(\tB\x1e\xbaH\x1br\x192\x17^(0[1-9]|1[0-2])/\\d{2}$R\aexpires\x12+\n" +
-	"\x11verification_code\x18\x04 \x01(\tR\x10verificationCode\x1a:\n" +
-	"\x0eExpirationDate\x12\x12\n" +
-	"\x04year\x18\x01 \x01(\x05R\x04year\x12\x14\n" +
-	"\x05month\x18\x02 \x01(\x05R\x05month\"<\n" +
+	"\x11verification_code\x18\x04 \x01(\tR\x10verificationCode\"<\n" +
 	"\x04Text\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\";\n" +
@@ -1090,7 +1034,7 @@ func file_gophkeeper_v1_secrets_proto_rawDescGZIP() []byte {
 }
 
 var file_gophkeeper_v1_secrets_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_gophkeeper_v1_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_gophkeeper_v1_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_gophkeeper_v1_secrets_proto_goTypes = []any{
 	(SecretInfo_Kind)(0),          // 0: gophkeeper.v1.SecretInfo.Kind
 	(*SecretInfo)(nil),            // 1: gophkeeper.v1.SecretInfo
@@ -1109,13 +1053,12 @@ var file_gophkeeper_v1_secrets_proto_goTypes = []any{
 	(*UpdateResponse)(nil),        // 14: gophkeeper.v1.UpdateResponse
 	(*DeleteRequest)(nil),         // 15: gophkeeper.v1.DeleteRequest
 	(*DeleteResponse)(nil),        // 16: gophkeeper.v1.DeleteResponse
-	(*Card_ExpirationDate)(nil),   // 17: gophkeeper.v1.Card.ExpirationDate
-	(*timestamppb.Timestamp)(nil), // 18: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
 }
 var file_gophkeeper_v1_secrets_proto_depIdxs = []int32{
 	0,  // 0: gophkeeper.v1.SecretInfo.kind:type_name -> gophkeeper.v1.SecretInfo.Kind
-	18, // 1: gophkeeper.v1.SecretInfo.created:type_name -> google.protobuf.Timestamp
-	18, // 2: gophkeeper.v1.SecretInfo.modified:type_name -> google.protobuf.Timestamp
+	17, // 1: gophkeeper.v1.SecretInfo.created:type_name -> google.protobuf.Timestamp
+	17, // 2: gophkeeper.v1.SecretInfo.modified:type_name -> google.protobuf.Timestamp
 	2,  // 3: gophkeeper.v1.SecretDetails.credentials:type_name -> gophkeeper.v1.Credentials
 	3,  // 4: gophkeeper.v1.SecretDetails.card:type_name -> gophkeeper.v1.Card
 	4,  // 5: gophkeeper.v1.SecretDetails.text:type_name -> gophkeeper.v1.Text
@@ -1127,7 +1070,7 @@ var file_gophkeeper_v1_secrets_proto_depIdxs = []int32{
 	6,  // 11: gophkeeper.v1.ReadDetailsResponse.details:type_name -> gophkeeper.v1.SecretDetails
 	1,  // 12: gophkeeper.v1.UpdateRequest.info:type_name -> gophkeeper.v1.SecretInfo
 	6,  // 13: gophkeeper.v1.UpdateRequest.details:type_name -> gophkeeper.v1.SecretDetails
-	18, // 14: gophkeeper.v1.UpdateResponse.modified:type_name -> google.protobuf.Timestamp
+	17, // 14: gophkeeper.v1.UpdateResponse.modified:type_name -> google.protobuf.Timestamp
 	1,  // 15: gophkeeper.v1.DeleteRequest.info:type_name -> gophkeeper.v1.SecretInfo
 	7,  // 16: gophkeeper.v1.SecretsService.InfoList:input_type -> gophkeeper.v1.InfoListRequest
 	9,  // 17: gophkeeper.v1.SecretsService.Create:input_type -> gophkeeper.v1.CreateRequest
@@ -1163,7 +1106,7 @@ func file_gophkeeper_v1_secrets_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gophkeeper_v1_secrets_proto_rawDesc), len(file_gophkeeper_v1_secrets_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   17,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
