@@ -47,8 +47,9 @@ type Text struct {
 }
 
 type Raw struct {
+	Path     string
+	Size     int64
 	Filename string
-	Content  []byte
 }
 
 type SecretStorage interface {

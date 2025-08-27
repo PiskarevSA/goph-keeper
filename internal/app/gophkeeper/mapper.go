@@ -85,7 +85,8 @@ func pbDetailsToDomain(d *gophkeeperv1.SecretDetails) domain.SecretDetails {
 	case *gophkeeperv1.SecretDetails_Raw:
 		out.Raw = &domain.Raw{
 			Filename: v.Raw.GetFilename(),
-			Content:  v.Raw.GetContent(),
+			Path:     "", // unknown at this moment
+			Size:     v.Raw.GetSize(),
 		}
 	}
 	return out
@@ -124,7 +125,7 @@ func domainDetailsToPb(d domain.SecretDetails) *gophkeeperv1.SecretDetails {
 		out.Secret = &gophkeeperv1.SecretDetails_Raw{
 			Raw: &gophkeeperv1.Raw{
 				Filename: d.Raw.Filename,
-				Content:  d.Raw.Content,
+				Size:     d.Raw.Size,
 			},
 		}
 	}

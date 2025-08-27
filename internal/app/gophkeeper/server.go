@@ -2,6 +2,9 @@ package gophkeeper
 
 import (
 	"context"
+	"io"
+	"os"
+	"path/filepath"
 	"time"
 
 	gophkeeperv1 "github.com/PiskarevSA/goph-keeper/gen/gophkeeper/v1"
@@ -30,11 +33,11 @@ func NewUserServer(users *service.UserService, jwt *auth.JWTManager,
 func (s *UserServer) Register(
 	ctx context.Context, req *gophkeeperv1.RegisterRequest,
 ) (*gophkeeperv1.RegisterResponse, error) {
-	userId, err := s.users.Register(req.Email, req.Password)
+	userID, err := s.users.Register(req.Email, req.Password)
 	if err != nil {
 		return nil, err
 	}
-	token, err := s.jwt.Generate(userId)
+	token, err := s.jwt.Generate(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +104,6 @@ func (s *SecretsServer) Create(
 		Name:    req.GetName(),
 		Kind:    deriveKindFromPbDetails(req.GetDetails()),
 		Details: pbDetailsToDomain(req.GetDetails()),
-		// Created/Modified выставит storage.CreateSecret, мы возьмём из ответа
 	}
 
 	created, err := s.secrets.Create(userID, sec)
@@ -182,7 +184,11 @@ func (s *SecretsServer) Update(
 func (s *SecretsServer) Delete(
 	ctx context.Context, req *gophkeeperv1.DeleteRequest,
 ) (*gophkeeperv1.DeleteResponse, error) {
-	userID := int64(1) // TODO read from context
+	userID, ok := auth.UserIDFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
 	sec, err := s.secrets.Get(userID, req.GetInfo().GetUuid())
 	if err != nil {
 		return nil, err
@@ -201,6 +207,141 @@ func (s *SecretsServer) Delete(
 	}
 
 	return &gophkeeperv1.DeleteResponse{}, nil
+}
+
+func (s *SecretsServer) UploadRaw(
+	stream gophkeeperv1.SecretsService_UploadRawServer,
+) error {
+	userID, ok := auth.UserIDFromContext(stream.Context())
+	if !ok {
+		return status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	var uuid string
+	var expectedModified time.Time
+	var tmpFilePath string
+	var outFile *os.File
+
+	defer func() {
+		if outFile != nil {
+			outFile.Close()
+		}
+	}()
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		switch v := req.Data.(type) {
+		case *gophkeeperv1.UploadRawRequest_Begin_:
+			uuid = v.Begin.Uuid
+			expectedModified = v.Begin.ExpectedModified.AsTime()
+
+			sec, err := s.secrets.Get(userID, uuid)
+			if err != nil {
+				return err
+			}
+			if sec == nil {
+				return status.Error(codes.NotFound, "secret not found")
+			}
+			if !sec.Modified.Equal(expectedModified) {
+				return status.Error(codes.FailedPrecondition, "secret info is outdated")
+			}
+
+			tmpDir := "./data/raw"
+			if err = os.MkdirAll(tmpDir, 0o755); err != nil {
+				return err
+			}
+			tmpFilePath = filepath.Join(tmpDir, uuid)
+			outFile, err = os.Create(tmpFilePath)
+			if err != nil {
+				return err
+			}
+
+		case *gophkeeperv1.UploadRawRequest_Chunk:
+			if outFile == nil {
+				return status.Error(codes.FailedPrecondition, "upload not initialized")
+			}
+			if _, err := outFile.Write(v.Chunk.Content); err != nil {
+				return err
+			}
+		}
+	}
+
+	if outFile != nil {
+		outFile.Close()
+	}
+
+	modified, err := s.secrets.SaveRawFile(userID, uuid, tmpFilePath)
+	if err != nil {
+		return err
+	}
+
+	return stream.SendAndClose(&gophkeeperv1.UploadRawResponse{
+		Modified: timestamppb.New(modified),
+	})
+}
+
+func (s *SecretsServer) DownloadRaw(
+	req *gophkeeperv1.DownloadRawRequest,
+	stream gophkeeperv1.SecretsService_DownloadRawServer,
+) error {
+	userID, ok := auth.UserIDFromContext(stream.Context())
+	if !ok {
+		return status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	sec, err := s.secrets.Get(userID, req.GetUuid())
+	if err != nil {
+		return err
+	}
+	if sec == nil || sec.Details.Raw == nil {
+		return status.Error(codes.NotFound, "raw secret not found")
+	}
+
+	f, err := os.Open(sec.Details.Raw.Path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// отправляем метаданные
+	if err := stream.Send(&gophkeeperv1.DownloadRawResponse{
+		Data: &gophkeeperv1.DownloadRawResponse_Begin_{
+			Begin: &gophkeeperv1.DownloadRawResponse_Begin{
+				Filename: sec.Details.Raw.Filename,
+				Size:     sec.Details.Raw.Size,
+				Modified: timestamppb.New(sec.Modified),
+			},
+		},
+	}); err != nil {
+		return err
+	}
+
+	buf := make([]byte, 64*1024) // 64KB chunk
+	for {
+		n, err := f.Read(buf)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if err := stream.Send(&gophkeeperv1.DownloadRawResponse{
+			Data: &gophkeeperv1.DownloadRawResponse_Chunk{
+				Chunk: &gophkeeperv1.FileChunk{Content: buf[:n]},
+			},
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // checkFresh проверяет, что клиентская версия секрета актуальна

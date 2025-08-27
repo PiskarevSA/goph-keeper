@@ -24,6 +24,8 @@ const (
 	SecretsService_ReadDetails_FullMethodName = "/gophkeeper.v1.SecretsService/ReadDetails"
 	SecretsService_Update_FullMethodName      = "/gophkeeper.v1.SecretsService/Update"
 	SecretsService_Delete_FullMethodName      = "/gophkeeper.v1.SecretsService/Delete"
+	SecretsService_UploadRaw_FullMethodName   = "/gophkeeper.v1.SecretsService/UploadRaw"
+	SecretsService_DownloadRaw_FullMethodName = "/gophkeeper.v1.SecretsService/DownloadRaw"
 )
 
 // SecretsServiceClient is the client API for SecretsService service.
@@ -35,6 +37,8 @@ type SecretsServiceClient interface {
 	ReadDetails(ctx context.Context, in *ReadDetailsRequest, opts ...grpc.CallOption) (*ReadDetailsResponse, error)
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	UploadRaw(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadRawRequest, UploadRawResponse], error)
+	DownloadRaw(ctx context.Context, in *DownloadRawRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DownloadRawResponse], error)
 }
 
 type secretsServiceClient struct {
@@ -95,6 +99,38 @@ func (c *secretsServiceClient) Delete(ctx context.Context, in *DeleteRequest, op
 	return out, nil
 }
 
+func (c *secretsServiceClient) UploadRaw(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadRawRequest, UploadRawResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &SecretsService_ServiceDesc.Streams[0], SecretsService_UploadRaw_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[UploadRawRequest, UploadRawResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SecretsService_UploadRawClient = grpc.ClientStreamingClient[UploadRawRequest, UploadRawResponse]
+
+func (c *secretsServiceClient) DownloadRaw(ctx context.Context, in *DownloadRawRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DownloadRawResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &SecretsService_ServiceDesc.Streams[1], SecretsService_DownloadRaw_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[DownloadRawRequest, DownloadRawResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SecretsService_DownloadRawClient = grpc.ServerStreamingClient[DownloadRawResponse]
+
 // SecretsServiceServer is the server API for SecretsService service.
 // All implementations must embed UnimplementedSecretsServiceServer
 // for forward compatibility.
@@ -104,6 +140,8 @@ type SecretsServiceServer interface {
 	ReadDetails(context.Context, *ReadDetailsRequest) (*ReadDetailsResponse, error)
 	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	UploadRaw(grpc.ClientStreamingServer[UploadRawRequest, UploadRawResponse]) error
+	DownloadRaw(*DownloadRawRequest, grpc.ServerStreamingServer[DownloadRawResponse]) error
 	mustEmbedUnimplementedSecretsServiceServer()
 }
 
@@ -128,6 +166,12 @@ func (UnimplementedSecretsServiceServer) Update(context.Context, *UpdateRequest)
 }
 func (UnimplementedSecretsServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedSecretsServiceServer) UploadRaw(grpc.ClientStreamingServer[UploadRawRequest, UploadRawResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method UploadRaw not implemented")
+}
+func (UnimplementedSecretsServiceServer) DownloadRaw(*DownloadRawRequest, grpc.ServerStreamingServer[DownloadRawResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method DownloadRaw not implemented")
 }
 func (UnimplementedSecretsServiceServer) mustEmbedUnimplementedSecretsServiceServer() {}
 func (UnimplementedSecretsServiceServer) testEmbeddedByValue()                        {}
@@ -240,6 +284,24 @@ func _SecretsService_Delete_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecretsService_UploadRaw_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(SecretsServiceServer).UploadRaw(&grpc.GenericServerStream[UploadRawRequest, UploadRawResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SecretsService_UploadRawServer = grpc.ClientStreamingServer[UploadRawRequest, UploadRawResponse]
+
+func _SecretsService_DownloadRaw_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DownloadRawRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SecretsServiceServer).DownloadRaw(m, &grpc.GenericServerStream[DownloadRawRequest, DownloadRawResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SecretsService_DownloadRawServer = grpc.ServerStreamingServer[DownloadRawResponse]
+
 // SecretsService_ServiceDesc is the grpc.ServiceDesc for SecretsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,6 +330,17 @@ var SecretsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SecretsService_Delete_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "UploadRaw",
+			Handler:       _SecretsService_UploadRaw_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "DownloadRaw",
+			Handler:       _SecretsService_DownloadRaw_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "gophkeeper/v1/secrets.proto",
 }

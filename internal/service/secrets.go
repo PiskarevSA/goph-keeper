@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/PiskarevSA/goph-keeper/internal/domain"
@@ -35,4 +37,34 @@ func (s *SecretsService) Update(userID int64, sec domain.Secret,
 
 func (s *SecretsService) Delete(userID int64, uuid string) error {
 	return s.storage.DeleteSecret(userID, uuid)
+}
+
+func (s *SecretsService) SaveRawFile(
+	userID int64, uuid string, path string,
+) (time.Time, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	sec, err := s.storage.GetSecret(userID, uuid)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if sec == nil {
+		return time.Time{}, fmt.Errorf("secret not found")
+	}
+
+	sec.Details.Raw = &domain.Raw{
+		Path:     path,
+		Size:     info.Size(),
+		Filename: sec.Details.Raw.Filename,
+	}
+
+	modified, err := s.storage.UpdateSecret(userID, *sec)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return modified, nil
 }

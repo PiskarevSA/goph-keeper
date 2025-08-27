@@ -89,6 +89,35 @@ func (s *PostgresStorage) CreateSecret(userID int64, sec domain.Secret,
 		sec.UUID, userID, sec.Name, int(sec.Kind), sec.Details.Description,
 	).Scan(&sec.Created, &sec.Modified)
 
+	switch sec.Kind {
+	case domain.KindCredentials:
+		_, err = s.db.Exec(
+			`INSERT INTO credentials_secrets (uuid, login, password)
+			VALUES ($1,$2,$3)`,
+			sec.UUID, sec.Details.Credentials.Login, sec.Details.Credentials.Password,
+		)
+	case domain.KindCard:
+		_, err = s.db.Exec(
+			`INSERT INTO card_secrets (uuid, number, holder, expires, verification_code)
+			VALUES ($1,$2,$3,$4,$5)`,
+			sec.UUID, sec.Details.Card.Number, sec.Details.Card.Holder,
+			sec.Details.Card.Expires, sec.Details.Card.VerificationCode,
+		)
+	case domain.KindText:
+		_, err = s.db.Exec(
+			`INSERT INTO text_secrets (uuid, filename, content)
+			VALUES ($1,$2,$3)`,
+			sec.UUID, sec.Details.Text.Filename, sec.Details.Text.Content,
+		)
+	case domain.KindRaw:
+		_, err = s.db.Exec(
+			`INSERT INTO raw_secrets (uuid, path, filename, size)
+			VALUES ($1,$2,$3,$4)`,
+			sec.UUID, sec.Details.Raw.Path,
+			sec.Details.Raw.Filename, sec.Details.Raw.Size,
+		)
+	}
+
 	return sec, err
 }
 
@@ -107,6 +136,46 @@ func (s *PostgresStorage) GetSecret(userID int64, uuid string,
 		return nil, nil
 	}
 	sec.Kind = domain.SecretKind(kind)
+
+	switch sec.Kind {
+	case domain.KindCredentials:
+		c := domain.Credentials{}
+		_ = s.db.QueryRow(
+			`SELECT login, password
+			FROM credentials_secrets
+			WHERE uuid=$1`,
+			sec.UUID).
+			Scan(&c.Login, &c.Password)
+		sec.Details.Credentials = &c
+	case domain.KindCard:
+		c := domain.Card{}
+		_ = s.db.QueryRow(
+			`SELECT number, holder, expires, verification_code
+			FROM card_secrets
+			WHERE uuid=$1`,
+			sec.UUID).
+			Scan(&c.Number, &c.Holder, &c.Expires, &c.VerificationCode)
+		sec.Details.Card = &c
+	case domain.KindText:
+		t := domain.Text{}
+		_ = s.db.QueryRow(
+			`SELECT filename, content
+			FROM text_secrets
+			WHERE uuid=$1`,
+			sec.UUID).
+			Scan(&t.Filename, &t.Content)
+		sec.Details.Text = &t
+	case domain.KindRaw:
+		r := domain.Raw{}
+		_ = s.db.QueryRow(
+			`SELECT path, filename, size
+			FROM raw_secrets
+			WHERE uuid=$1`,
+			sec.UUID).
+			Scan(&r.Path, &r.Filename, &r.Size)
+		sec.Details.Raw = &r
+	}
+
 	return &sec, err
 }
 
@@ -120,6 +189,48 @@ func (s *PostgresStorage) UpdateSecret(userID int64, sec domain.Secret,
          RETURNING modified`,
 		sec.Name, int(sec.Kind), sec.Details.Description, userID, sec.UUID,
 	).Scan(&modified)
+	if err != nil {
+		return modified, err
+	}
+
+	switch sec.Kind {
+	case domain.KindCredentials:
+		_, err = s.db.Exec(
+			`UPDATE credentials_secrets
+			SET login=$1, password=$2
+			WHERE uuid=$3`,
+			sec.Details.Credentials.Login,
+			sec.Details.Credentials.Password,
+			sec.UUID)
+	case domain.KindCard:
+		_, err = s.db.Exec(
+			`UPDATE card_secrets
+			SET number=$1, holder=$2, expires=$3, verification_code=$4
+			WHERE uuid=$5`,
+			sec.Details.Card.Number,
+			sec.Details.Card.Holder,
+			sec.Details.Card.Expires,
+			sec.Details.Card.VerificationCode,
+			sec.UUID)
+	case domain.KindText:
+		_, err = s.db.Exec(
+			`UPDATE text_secrets
+			SET filename=$1, content=$2
+			WHERE uuid=$3`,
+			sec.Details.Text.Filename,
+			sec.Details.Text.Content,
+			sec.UUID)
+	case domain.KindRaw:
+		_, err = s.db.Exec(
+			`UPDATE raw_secrets
+			SET path=$1, filename=$2, size=$3
+			WHERE uuid=$4`,
+			sec.Details.Raw.Path,
+			sec.Details.Raw.Filename,
+			sec.Details.Raw.Size,
+			sec.UUID)
+	}
+
 	return modified, err
 }
 

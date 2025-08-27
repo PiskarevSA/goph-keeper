@@ -330,7 +330,7 @@ func (x *Text) GetContent() string {
 type Raw struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Content       []byte                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	Size          int64                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -372,11 +372,11 @@ func (x *Raw) GetFilename() string {
 	return ""
 }
 
-func (x *Raw) GetContent() []byte {
+func (x *Raw) GetSize() int64 {
 	if x != nil {
-		return x.Content
+		return x.Size
 	}
-	return nil
+	return 0
 }
 
 type SecretDetails struct {
@@ -954,6 +954,418 @@ func (*DeleteResponse) Descriptor() ([]byte, []int) {
 	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{15}
 }
 
+// UploadRaw uploads raw file content
+// Returns FailedPrecondition error, if expected_modified not matched
+type UploadRawRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Data:
+	//
+	//	*UploadRawRequest_Begin_
+	//	*UploadRawRequest_Chunk
+	Data          isUploadRawRequest_Data `protobuf_oneof:"data"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadRawRequest) Reset() {
+	*x = UploadRawRequest{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadRawRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadRawRequest) ProtoMessage() {}
+
+func (x *UploadRawRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadRawRequest.ProtoReflect.Descriptor instead.
+func (*UploadRawRequest) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *UploadRawRequest) GetData() isUploadRawRequest_Data {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *UploadRawRequest) GetBegin() *UploadRawRequest_Begin {
+	if x != nil {
+		if x, ok := x.Data.(*UploadRawRequest_Begin_); ok {
+			return x.Begin
+		}
+	}
+	return nil
+}
+
+func (x *UploadRawRequest) GetChunk() *FileChunk {
+	if x != nil {
+		if x, ok := x.Data.(*UploadRawRequest_Chunk); ok {
+			return x.Chunk
+		}
+	}
+	return nil
+}
+
+type isUploadRawRequest_Data interface {
+	isUploadRawRequest_Data()
+}
+
+type UploadRawRequest_Begin_ struct {
+	Begin *UploadRawRequest_Begin `protobuf:"bytes,1,opt,name=begin,proto3,oneof"`
+}
+
+type UploadRawRequest_Chunk struct {
+	Chunk *FileChunk `protobuf:"bytes,2,opt,name=chunk,proto3,oneof"`
+}
+
+func (*UploadRawRequest_Begin_) isUploadRawRequest_Data() {}
+
+func (*UploadRawRequest_Chunk) isUploadRawRequest_Data() {}
+
+type FileChunk struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Content       []byte                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileChunk) Reset() {
+	*x = FileChunk{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileChunk) ProtoMessage() {}
+
+func (x *FileChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileChunk.ProtoReflect.Descriptor instead.
+func (*FileChunk) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *FileChunk) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+type UploadRawResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Modified      *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=modified,proto3" json:"modified,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadRawResponse) Reset() {
+	*x = UploadRawResponse{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadRawResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadRawResponse) ProtoMessage() {}
+
+func (x *UploadRawResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadRawResponse.ProtoReflect.Descriptor instead.
+func (*UploadRawResponse) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UploadRawResponse) GetModified() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Modified
+	}
+	return nil
+}
+
+// DownloadRaw downloads raw file content
+// Returns metadata in first packet and chunks in the others
+type DownloadRawRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DownloadRawRequest) Reset() {
+	*x = DownloadRawRequest{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DownloadRawRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DownloadRawRequest) ProtoMessage() {}
+
+func (x *DownloadRawRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DownloadRawRequest.ProtoReflect.Descriptor instead.
+func (*DownloadRawRequest) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DownloadRawRequest) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+type DownloadRawResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Data:
+	//
+	//	*DownloadRawResponse_Begin_
+	//	*DownloadRawResponse_Chunk
+	Data          isDownloadRawResponse_Data `protobuf_oneof:"data"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DownloadRawResponse) Reset() {
+	*x = DownloadRawResponse{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DownloadRawResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DownloadRawResponse) ProtoMessage() {}
+
+func (x *DownloadRawResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DownloadRawResponse.ProtoReflect.Descriptor instead.
+func (*DownloadRawResponse) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *DownloadRawResponse) GetData() isDownloadRawResponse_Data {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *DownloadRawResponse) GetBegin() *DownloadRawResponse_Begin {
+	if x != nil {
+		if x, ok := x.Data.(*DownloadRawResponse_Begin_); ok {
+			return x.Begin
+		}
+	}
+	return nil
+}
+
+func (x *DownloadRawResponse) GetChunk() *FileChunk {
+	if x != nil {
+		if x, ok := x.Data.(*DownloadRawResponse_Chunk); ok {
+			return x.Chunk
+		}
+	}
+	return nil
+}
+
+type isDownloadRawResponse_Data interface {
+	isDownloadRawResponse_Data()
+}
+
+type DownloadRawResponse_Begin_ struct {
+	Begin *DownloadRawResponse_Begin `protobuf:"bytes,1,opt,name=begin,proto3,oneof"`
+}
+
+type DownloadRawResponse_Chunk struct {
+	Chunk *FileChunk `protobuf:"bytes,2,opt,name=chunk,proto3,oneof"`
+}
+
+func (*DownloadRawResponse_Begin_) isDownloadRawResponse_Data() {}
+
+func (*DownloadRawResponse_Chunk) isDownloadRawResponse_Data() {}
+
+type UploadRawRequest_Begin struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Uuid             string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	ExpectedModified *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=expected_modified,json=expectedModified,proto3" json:"expected_modified,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *UploadRawRequest_Begin) Reset() {
+	*x = UploadRawRequest_Begin{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadRawRequest_Begin) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadRawRequest_Begin) ProtoMessage() {}
+
+func (x *UploadRawRequest_Begin) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadRawRequest_Begin.ProtoReflect.Descriptor instead.
+func (*UploadRawRequest_Begin) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{16, 0}
+}
+
+func (x *UploadRawRequest_Begin) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+func (x *UploadRawRequest_Begin) GetExpectedModified() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpectedModified
+	}
+	return nil
+}
+
+type DownloadRawResponse_Begin struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
+	Size          int64                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Modified      *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=modified,proto3" json:"modified,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DownloadRawResponse_Begin) Reset() {
+	*x = DownloadRawResponse_Begin{}
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DownloadRawResponse_Begin) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DownloadRawResponse_Begin) ProtoMessage() {}
+
+func (x *DownloadRawResponse_Begin) ProtoReflect() protoreflect.Message {
+	mi := &file_gophkeeper_v1_secrets_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DownloadRawResponse_Begin.ProtoReflect.Descriptor instead.
+func (*DownloadRawResponse_Begin) Descriptor() ([]byte, []int) {
+	return file_gophkeeper_v1_secrets_proto_rawDescGZIP(), []int{20, 0}
+}
+
+func (x *DownloadRawResponse_Begin) GetFilename() string {
+	if x != nil {
+		return x.Filename
+	}
+	return ""
+}
+
+func (x *DownloadRawResponse_Begin) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *DownloadRawResponse_Begin) GetModified() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Modified
+	}
+	return nil
+}
+
 var File_gophkeeper_v1_secrets_proto protoreflect.FileDescriptor
 
 const file_gophkeeper_v1_secrets_proto_rawDesc = "" +
@@ -982,10 +1394,10 @@ const file_gophkeeper_v1_secrets_proto_rawDesc = "" +
 	"\x11verification_code\x18\x04 \x01(\tR\x10verificationCode\"<\n" +
 	"\x04Text\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\";\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"5\n" +
 	"\x03Raw\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\fR\acontent\"\xf9\x01\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x03R\x04size\"\xf9\x01\n" +
 	"\rSecretDetails\x12 \n" +
 	"\vdescription\x18\x01 \x01(\tR\vdescription\x12>\n" +
 	"\vcredentials\x18\x02 \x01(\v2\x1a.gophkeeper.v1.CredentialsH\x00R\vcredentials\x12)\n" +
@@ -1012,13 +1424,36 @@ const file_gophkeeper_v1_secrets_proto_rawDesc = "" +
 	"\bmodified\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\bmodified\">\n" +
 	"\rDeleteRequest\x12-\n" +
 	"\x04info\x18\x01 \x01(\v2\x19.gophkeeper.v1.SecretInfoR\x04info\"\x10\n" +
-	"\x0eDeleteResponse2\x88\x03\n" +
+	"\x0eDeleteResponse\"\xfb\x01\n" +
+	"\x10UploadRawRequest\x12=\n" +
+	"\x05begin\x18\x01 \x01(\v2%.gophkeeper.v1.UploadRawRequest.BeginH\x00R\x05begin\x120\n" +
+	"\x05chunk\x18\x02 \x01(\v2\x18.gophkeeper.v1.FileChunkH\x00R\x05chunk\x1an\n" +
+	"\x05Begin\x12\x1c\n" +
+	"\x04uuid\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x04uuid\x12G\n" +
+	"\x11expected_modified\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x10expectedModifiedB\x06\n" +
+	"\x04data\"%\n" +
+	"\tFileChunk\x12\x18\n" +
+	"\acontent\x18\x01 \x01(\fR\acontent\"K\n" +
+	"\x11UploadRawResponse\x126\n" +
+	"\bmodified\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\bmodified\"(\n" +
+	"\x12DownloadRawRequest\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"\x82\x02\n" +
+	"\x13DownloadRawResponse\x12@\n" +
+	"\x05begin\x18\x01 \x01(\v2(.gophkeeper.v1.DownloadRawResponse.BeginH\x00R\x05begin\x120\n" +
+	"\x05chunk\x18\x02 \x01(\v2\x18.gophkeeper.v1.FileChunkH\x00R\x05chunk\x1ao\n" +
+	"\x05Begin\x12\x1a\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x03R\x04size\x126\n" +
+	"\bmodified\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\bmodifiedB\x06\n" +
+	"\x04data2\xb2\x04\n" +
 	"\x0eSecretsService\x12K\n" +
 	"\bInfoList\x12\x1e.gophkeeper.v1.InfoListRequest\x1a\x1f.gophkeeper.v1.InfoListResponse\x12E\n" +
 	"\x06Create\x12\x1c.gophkeeper.v1.CreateRequest\x1a\x1d.gophkeeper.v1.CreateResponse\x12T\n" +
 	"\vReadDetails\x12!.gophkeeper.v1.ReadDetailsRequest\x1a\".gophkeeper.v1.ReadDetailsResponse\x12E\n" +
 	"\x06Update\x12\x1c.gophkeeper.v1.UpdateRequest\x1a\x1d.gophkeeper.v1.UpdateResponse\x12E\n" +
-	"\x06Delete\x12\x1c.gophkeeper.v1.DeleteRequest\x1a\x1d.gophkeeper.v1.DeleteResponseB\xb8\x01\n" +
+	"\x06Delete\x12\x1c.gophkeeper.v1.DeleteRequest\x1a\x1d.gophkeeper.v1.DeleteResponse\x12P\n" +
+	"\tUploadRaw\x12\x1f.gophkeeper.v1.UploadRawRequest\x1a .gophkeeper.v1.UploadRawResponse(\x01\x12V\n" +
+	"\vDownloadRaw\x12!.gophkeeper.v1.DownloadRawRequest\x1a\".gophkeeper.v1.DownloadRawResponse0\x01B\xb8\x01\n" +
 	"\x11com.gophkeeper.v1B\fSecretsProtoP\x01Z@github.com/PiskarevSA/goph-keeper/gen/gophkeeper/v1;gophkeeperv1\xa2\x02\x03GXX\xaa\x02\rGophkeeper.V1\xca\x02\rGophkeeper\\V1\xe2\x02\x19Gophkeeper\\V1\\GPBMetadata\xea\x02\x0eGophkeeper::V1b\x06proto3"
 
 var (
@@ -1034,31 +1469,38 @@ func file_gophkeeper_v1_secrets_proto_rawDescGZIP() []byte {
 }
 
 var file_gophkeeper_v1_secrets_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_gophkeeper_v1_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_gophkeeper_v1_secrets_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_gophkeeper_v1_secrets_proto_goTypes = []any{
-	(SecretInfo_Kind)(0),          // 0: gophkeeper.v1.SecretInfo.Kind
-	(*SecretInfo)(nil),            // 1: gophkeeper.v1.SecretInfo
-	(*Credentials)(nil),           // 2: gophkeeper.v1.Credentials
-	(*Card)(nil),                  // 3: gophkeeper.v1.Card
-	(*Text)(nil),                  // 4: gophkeeper.v1.Text
-	(*Raw)(nil),                   // 5: gophkeeper.v1.Raw
-	(*SecretDetails)(nil),         // 6: gophkeeper.v1.SecretDetails
-	(*InfoListRequest)(nil),       // 7: gophkeeper.v1.InfoListRequest
-	(*InfoListResponse)(nil),      // 8: gophkeeper.v1.InfoListResponse
-	(*CreateRequest)(nil),         // 9: gophkeeper.v1.CreateRequest
-	(*CreateResponse)(nil),        // 10: gophkeeper.v1.CreateResponse
-	(*ReadDetailsRequest)(nil),    // 11: gophkeeper.v1.ReadDetailsRequest
-	(*ReadDetailsResponse)(nil),   // 12: gophkeeper.v1.ReadDetailsResponse
-	(*UpdateRequest)(nil),         // 13: gophkeeper.v1.UpdateRequest
-	(*UpdateResponse)(nil),        // 14: gophkeeper.v1.UpdateResponse
-	(*DeleteRequest)(nil),         // 15: gophkeeper.v1.DeleteRequest
-	(*DeleteResponse)(nil),        // 16: gophkeeper.v1.DeleteResponse
-	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
+	(SecretInfo_Kind)(0),              // 0: gophkeeper.v1.SecretInfo.Kind
+	(*SecretInfo)(nil),                // 1: gophkeeper.v1.SecretInfo
+	(*Credentials)(nil),               // 2: gophkeeper.v1.Credentials
+	(*Card)(nil),                      // 3: gophkeeper.v1.Card
+	(*Text)(nil),                      // 4: gophkeeper.v1.Text
+	(*Raw)(nil),                       // 5: gophkeeper.v1.Raw
+	(*SecretDetails)(nil),             // 6: gophkeeper.v1.SecretDetails
+	(*InfoListRequest)(nil),           // 7: gophkeeper.v1.InfoListRequest
+	(*InfoListResponse)(nil),          // 8: gophkeeper.v1.InfoListResponse
+	(*CreateRequest)(nil),             // 9: gophkeeper.v1.CreateRequest
+	(*CreateResponse)(nil),            // 10: gophkeeper.v1.CreateResponse
+	(*ReadDetailsRequest)(nil),        // 11: gophkeeper.v1.ReadDetailsRequest
+	(*ReadDetailsResponse)(nil),       // 12: gophkeeper.v1.ReadDetailsResponse
+	(*UpdateRequest)(nil),             // 13: gophkeeper.v1.UpdateRequest
+	(*UpdateResponse)(nil),            // 14: gophkeeper.v1.UpdateResponse
+	(*DeleteRequest)(nil),             // 15: gophkeeper.v1.DeleteRequest
+	(*DeleteResponse)(nil),            // 16: gophkeeper.v1.DeleteResponse
+	(*UploadRawRequest)(nil),          // 17: gophkeeper.v1.UploadRawRequest
+	(*FileChunk)(nil),                 // 18: gophkeeper.v1.FileChunk
+	(*UploadRawResponse)(nil),         // 19: gophkeeper.v1.UploadRawResponse
+	(*DownloadRawRequest)(nil),        // 20: gophkeeper.v1.DownloadRawRequest
+	(*DownloadRawResponse)(nil),       // 21: gophkeeper.v1.DownloadRawResponse
+	(*UploadRawRequest_Begin)(nil),    // 22: gophkeeper.v1.UploadRawRequest.Begin
+	(*DownloadRawResponse_Begin)(nil), // 23: gophkeeper.v1.DownloadRawResponse.Begin
+	(*timestamppb.Timestamp)(nil),     // 24: google.protobuf.Timestamp
 }
 var file_gophkeeper_v1_secrets_proto_depIdxs = []int32{
 	0,  // 0: gophkeeper.v1.SecretInfo.kind:type_name -> gophkeeper.v1.SecretInfo.Kind
-	17, // 1: gophkeeper.v1.SecretInfo.created:type_name -> google.protobuf.Timestamp
-	17, // 2: gophkeeper.v1.SecretInfo.modified:type_name -> google.protobuf.Timestamp
+	24, // 1: gophkeeper.v1.SecretInfo.created:type_name -> google.protobuf.Timestamp
+	24, // 2: gophkeeper.v1.SecretInfo.modified:type_name -> google.protobuf.Timestamp
 	2,  // 3: gophkeeper.v1.SecretDetails.credentials:type_name -> gophkeeper.v1.Credentials
 	3,  // 4: gophkeeper.v1.SecretDetails.card:type_name -> gophkeeper.v1.Card
 	4,  // 5: gophkeeper.v1.SecretDetails.text:type_name -> gophkeeper.v1.Text
@@ -1070,23 +1512,34 @@ var file_gophkeeper_v1_secrets_proto_depIdxs = []int32{
 	6,  // 11: gophkeeper.v1.ReadDetailsResponse.details:type_name -> gophkeeper.v1.SecretDetails
 	1,  // 12: gophkeeper.v1.UpdateRequest.info:type_name -> gophkeeper.v1.SecretInfo
 	6,  // 13: gophkeeper.v1.UpdateRequest.details:type_name -> gophkeeper.v1.SecretDetails
-	17, // 14: gophkeeper.v1.UpdateResponse.modified:type_name -> google.protobuf.Timestamp
+	24, // 14: gophkeeper.v1.UpdateResponse.modified:type_name -> google.protobuf.Timestamp
 	1,  // 15: gophkeeper.v1.DeleteRequest.info:type_name -> gophkeeper.v1.SecretInfo
-	7,  // 16: gophkeeper.v1.SecretsService.InfoList:input_type -> gophkeeper.v1.InfoListRequest
-	9,  // 17: gophkeeper.v1.SecretsService.Create:input_type -> gophkeeper.v1.CreateRequest
-	11, // 18: gophkeeper.v1.SecretsService.ReadDetails:input_type -> gophkeeper.v1.ReadDetailsRequest
-	13, // 19: gophkeeper.v1.SecretsService.Update:input_type -> gophkeeper.v1.UpdateRequest
-	15, // 20: gophkeeper.v1.SecretsService.Delete:input_type -> gophkeeper.v1.DeleteRequest
-	8,  // 21: gophkeeper.v1.SecretsService.InfoList:output_type -> gophkeeper.v1.InfoListResponse
-	10, // 22: gophkeeper.v1.SecretsService.Create:output_type -> gophkeeper.v1.CreateResponse
-	12, // 23: gophkeeper.v1.SecretsService.ReadDetails:output_type -> gophkeeper.v1.ReadDetailsResponse
-	14, // 24: gophkeeper.v1.SecretsService.Update:output_type -> gophkeeper.v1.UpdateResponse
-	16, // 25: gophkeeper.v1.SecretsService.Delete:output_type -> gophkeeper.v1.DeleteResponse
-	21, // [21:26] is the sub-list for method output_type
-	16, // [16:21] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	22, // 16: gophkeeper.v1.UploadRawRequest.begin:type_name -> gophkeeper.v1.UploadRawRequest.Begin
+	18, // 17: gophkeeper.v1.UploadRawRequest.chunk:type_name -> gophkeeper.v1.FileChunk
+	24, // 18: gophkeeper.v1.UploadRawResponse.modified:type_name -> google.protobuf.Timestamp
+	23, // 19: gophkeeper.v1.DownloadRawResponse.begin:type_name -> gophkeeper.v1.DownloadRawResponse.Begin
+	18, // 20: gophkeeper.v1.DownloadRawResponse.chunk:type_name -> gophkeeper.v1.FileChunk
+	24, // 21: gophkeeper.v1.UploadRawRequest.Begin.expected_modified:type_name -> google.protobuf.Timestamp
+	24, // 22: gophkeeper.v1.DownloadRawResponse.Begin.modified:type_name -> google.protobuf.Timestamp
+	7,  // 23: gophkeeper.v1.SecretsService.InfoList:input_type -> gophkeeper.v1.InfoListRequest
+	9,  // 24: gophkeeper.v1.SecretsService.Create:input_type -> gophkeeper.v1.CreateRequest
+	11, // 25: gophkeeper.v1.SecretsService.ReadDetails:input_type -> gophkeeper.v1.ReadDetailsRequest
+	13, // 26: gophkeeper.v1.SecretsService.Update:input_type -> gophkeeper.v1.UpdateRequest
+	15, // 27: gophkeeper.v1.SecretsService.Delete:input_type -> gophkeeper.v1.DeleteRequest
+	17, // 28: gophkeeper.v1.SecretsService.UploadRaw:input_type -> gophkeeper.v1.UploadRawRequest
+	20, // 29: gophkeeper.v1.SecretsService.DownloadRaw:input_type -> gophkeeper.v1.DownloadRawRequest
+	8,  // 30: gophkeeper.v1.SecretsService.InfoList:output_type -> gophkeeper.v1.InfoListResponse
+	10, // 31: gophkeeper.v1.SecretsService.Create:output_type -> gophkeeper.v1.CreateResponse
+	12, // 32: gophkeeper.v1.SecretsService.ReadDetails:output_type -> gophkeeper.v1.ReadDetailsResponse
+	14, // 33: gophkeeper.v1.SecretsService.Update:output_type -> gophkeeper.v1.UpdateResponse
+	16, // 34: gophkeeper.v1.SecretsService.Delete:output_type -> gophkeeper.v1.DeleteResponse
+	19, // 35: gophkeeper.v1.SecretsService.UploadRaw:output_type -> gophkeeper.v1.UploadRawResponse
+	21, // 36: gophkeeper.v1.SecretsService.DownloadRaw:output_type -> gophkeeper.v1.DownloadRawResponse
+	30, // [30:37] is the sub-list for method output_type
+	23, // [23:30] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_gophkeeper_v1_secrets_proto_init() }
@@ -1100,13 +1553,21 @@ func file_gophkeeper_v1_secrets_proto_init() {
 		(*SecretDetails_Text)(nil),
 		(*SecretDetails_Raw)(nil),
 	}
+	file_gophkeeper_v1_secrets_proto_msgTypes[16].OneofWrappers = []any{
+		(*UploadRawRequest_Begin_)(nil),
+		(*UploadRawRequest_Chunk)(nil),
+	}
+	file_gophkeeper_v1_secrets_proto_msgTypes[20].OneofWrappers = []any{
+		(*DownloadRawResponse_Begin_)(nil),
+		(*DownloadRawResponse_Chunk)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gophkeeper_v1_secrets_proto_rawDesc), len(file_gophkeeper_v1_secrets_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   16,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

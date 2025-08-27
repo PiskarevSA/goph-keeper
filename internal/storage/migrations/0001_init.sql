@@ -15,6 +15,37 @@ CREATE TABLE secrets (
     description TEXT
 );
 
+CREATE TABLE credentials_secrets (
+    uuid UUID PRIMARY KEY REFERENCES secrets(uuid) ON DELETE CASCADE,
+    login TEXT NOT NULL,
+    password TEXT NOT NULL
+);
+
+CREATE TABLE card_secrets (
+    uuid UUID PRIMARY KEY REFERENCES secrets(uuid) ON DELETE CASCADE,
+    number TEXT NOT NULL,
+    holder TEXT NOT NULL,
+    expires TEXT NOT NULL,
+    verification_code TEXT NOT NULL
+);
+
+CREATE TABLE text_secrets (
+    uuid UUID PRIMARY KEY REFERENCES secrets(uuid) ON DELETE CASCADE,
+    filename TEXT NOT NULL,
+    content TEXT NOT NULL
+);
+
+CREATE TABLE raw_secrets (
+    uuid UUID PRIMARY KEY REFERENCES secrets(uuid) ON DELETE CASCADE,
+    filename TEXT NOT NULL,
+    path TEXT NOT NULL,
+    size BIGINT NOT NULL
+);
+
 -- +goose Down
+DROP TABLE raw_secrets;
+DROP TABLE text_secrets;
+DROP TABLE card_secrets;
+DROP TABLE credentials_secrets;
 DROP TABLE secrets;
 DROP TABLE users;
