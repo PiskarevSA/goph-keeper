@@ -2,10 +2,10 @@ package gophkeeper
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	gophkeeperv1 "github.com/PiskarevSA/goph-keeper/gen/gophkeeper/v1"
+	"github.com/PiskarevSA/goph-keeper/internal/auth"
 	"github.com/PiskarevSA/goph-keeper/internal/domain"
 	"github.com/PiskarevSA/goph-keeper/internal/service"
 	"google.golang.org/grpc/codes"
@@ -16,10 +16,15 @@ import (
 type UserServer struct {
 	gophkeeperv1.UnimplementedUserServiceServer
 	users *service.UserService
+	jwt   *auth.JWTManager
 }
 
-func NewUserServer(users *service.UserService) *UserServer {
-	return &UserServer{users: users}
+func NewUserServer(users *service.UserService, jwt *auth.JWTManager,
+) *UserServer {
+	return &UserServer{
+		users: users,
+		jwt:   jwt,
+	}
 }
 
 func (s *UserServer) Register(
@@ -29,10 +34,11 @@ func (s *UserServer) Register(
 	if err != nil {
 		return nil, err
 	}
-	// TODO generate token
-	return &gophkeeperv1.RegisterResponse{
-		Token: "user-" + strconv.FormatInt(userId, 10),
-	}, nil
+	token, err := s.jwt.Generate(userId)
+	if err != nil {
+		return nil, err
+	}
+	return &gophkeeperv1.RegisterResponse{Token: token}, nil
 }
 
 func (s *UserServer) Login(
@@ -42,10 +48,11 @@ func (s *UserServer) Login(
 	if err != nil {
 		return nil, err
 	}
-	// TODO generate token
-	return &gophkeeperv1.LoginResponse{
-		Token: "user-" + strconv.FormatInt(user.ID, 10),
-	}, nil
+	token, err := s.jwt.Generate(user.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &gophkeeperv1.LoginResponse{Token: token}, nil
 }
 
 type SecretsServer struct {
@@ -60,7 +67,11 @@ func NewSecretsServer(secrets *service.SecretsService) *SecretsServer {
 func (s *SecretsServer) InfoList(
 	ctx context.Context, req *gophkeeperv1.InfoListRequest,
 ) (*gophkeeperv1.InfoListResponse, error) {
-	userID := int64(1) // TODO read from context
+	userID, ok := auth.UserIDFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
 	list, err := s.secrets.List(userID)
 	if err != nil {
 		return nil, err
@@ -81,7 +92,10 @@ func (s *SecretsServer) InfoList(
 func (s *SecretsServer) Create(
 	ctx context.Context, req *gophkeeperv1.CreateRequest,
 ) (*gophkeeperv1.CreateResponse, error) {
-	userID := int64(1) // TODO read from context
+	userID, ok := auth.UserIDFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
 
 	sec := domain.Secret{
 		Name:    req.GetName(),
@@ -109,7 +123,11 @@ func (s *SecretsServer) Create(
 func (s *SecretsServer) ReadDetails(
 	ctx context.Context, req *gophkeeperv1.ReadDetailsRequest,
 ) (*gophkeeperv1.ReadDetailsResponse, error) {
-	userID := int64(1) // TODO read from context
+	userID, ok := auth.UserIDFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
 	sec, err := s.secrets.Get(userID, req.GetInfo().GetUuid())
 	if err != nil {
 		return nil, err
@@ -131,7 +149,11 @@ func (s *SecretsServer) ReadDetails(
 func (s *SecretsServer) Update(
 	ctx context.Context, req *gophkeeperv1.UpdateRequest,
 ) (*gophkeeperv1.UpdateResponse, error) {
-	userID := int64(1) // TODO read from context
+	userID, ok := auth.UserIDFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
 	sec, err := s.secrets.Get(userID, req.GetInfo().GetUuid())
 	if err != nil {
 		return nil, err

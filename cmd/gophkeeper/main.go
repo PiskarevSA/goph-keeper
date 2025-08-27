@@ -9,6 +9,7 @@ import (
 	"github.com/PiskarevSA/goph-keeper/config"
 	gophkeeperv1 "github.com/PiskarevSA/goph-keeper/gen/gophkeeper/v1"
 	"github.com/PiskarevSA/goph-keeper/internal/app/gophkeeper"
+	"github.com/PiskarevSA/goph-keeper/internal/auth"
 	"github.com/PiskarevSA/goph-keeper/internal/service"
 	"github.com/PiskarevSA/goph-keeper/internal/storage"
 	"google.golang.org/grpc"
@@ -37,9 +38,17 @@ func main() {
 	userSvc := service.NewUserService(store)
 	secretSvc := service.NewSecretsService(store)
 
-	grpcServer := grpc.NewServer()
+	jwtManager := auth.NewJWTManager(cfg.JWT.Secret, cfg.JWT.Duration, "HS256")
+
+	exempt := map[string]bool{
+		"/gophkeeper.v1.UserService/Register": true,
+		"/gophkeeper.v1.UserService/Login":    true,
+	}
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(auth.UnaryAuthInterceptor(jwtManager, exempt)),
+	)
 	gophkeeperv1.RegisterUserServiceServer(
-		grpcServer, gophkeeper.NewUserServer(userSvc))
+		grpcServer, gophkeeper.NewUserServer(userSvc, jwtManager))
 	gophkeeperv1.RegisterSecretsServiceServer(
 		grpcServer, gophkeeper.NewSecretsServer(secretSvc))
 

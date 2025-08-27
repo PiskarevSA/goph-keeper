@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -19,6 +20,10 @@ type Config struct {
 	Server struct {
 		Host string
 		Port int
+	}
+	JWT struct {
+		Secret   string
+		Duration time.Duration
 	}
 }
 
@@ -38,15 +43,12 @@ func (c *Config) DSN() string {
 // SafeString returns a string for logging (without passwords)
 func (c *Config) SafeString() string {
 	return fmt.Sprintf(
-		"DB{host=%s port=%d user=%s password=%s name=%s sslmode=%s}, Server{host=%s port=%d}",
-		c.DB.Host,
-		c.DB.Port,
-		c.DB.User,
-		"[hidden]",
-		c.DB.Name,
-		c.DB.SSLMode,
-		c.Server.Host,
-		c.Server.Port,
+		"DB{host=%s port=%d user=%s password=%s name=%s sslmode=%s}\n"+
+			"Server{host=%s port=%d}\n"+
+			"JWT{secret=%s duration=%s}",
+		c.DB.Host, c.DB.Port, c.DB.User, "[hidden]", c.DB.Name, c.DB.SSLMode,
+		c.Server.Host, c.Server.Port,
+		"[hidden]", c.JWT.Duration,
 	)
 }
 
@@ -61,6 +63,9 @@ func LoadConfig() (*Config, error) {
 
 	viper.SetDefault("server.host", "")
 	viper.SetDefault("server.port", 50051)
+
+	viper.SetDefault("jwt.secret", "supersecret")
+	viper.SetDefault("jwt.duration", "24h")
 
 	// config file support (config.yaml, config.json, config.toml, etc.)
 	viper.SetConfigName("config")
@@ -96,6 +101,14 @@ func LoadConfig() (*Config, error) {
 
 	cfg.Server.Host = viper.GetString("server.host")
 	cfg.Server.Port = viper.GetInt("server.port")
+
+	cfg.JWT.Secret = viper.GetString("jwt.secret")
+	durStr := viper.GetString("jwt.duration")
+	dur, err := time.ParseDuration(durStr)
+	if err != nil {
+		return nil, fmt.Errorf("parse jwt duration error: %w", err)
+	}
+	cfg.JWT.Duration = dur
 
 	return cfg, nil
 }
